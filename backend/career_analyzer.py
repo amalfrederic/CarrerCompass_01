@@ -98,6 +98,21 @@ def analyze_career(resume_text, target_role):
         target_role=target_role
     )
 
+    # Normalize better_fit_roles so frontend always receives complete objects
+    raw_better = synthesis.get("better_fit_roles", [])
+    normalized_better = []
+    default_salary = synthesis.get("estimated_salary", "₹8L – ₹20L")
+    for r in raw_better:
+        if isinstance(r, dict) and r.get("role"):
+            normalized_better.append(r)
+        elif isinstance(r, str) and r.strip():
+            normalized_better.append({
+                "role": r.strip(),
+                "description": f"Role aligned with your skill background in {target_role}.",
+                "required_skills": resume_skills[:3],
+                "average_salary": default_salary
+            })
+
     # 7️⃣ FINAL RESPONSE
     return {
         "target_role": target_role,
@@ -107,8 +122,8 @@ def analyze_career(resume_text, target_role):
         # FEATURES
         "learning_priority": learning_priority,
         "learning_path": synthesis.get("learning_path", []),
-        "better_fit_roles": synthesis.get("better_fit_roles", []),
-        "estimated_salary": synthesis.get("estimated_salary", "₹8L – ₹20L"),
+        "better_fit_roles": normalized_better,
+        "estimated_salary": default_salary,
         "skill_gap": skill_gap,
 
         "career_insights": insights

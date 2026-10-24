@@ -386,8 +386,12 @@ Candidate Existing Skills: {resume_skills[:8]}
 Task:
 Provide a career acceleration package including:
 1. "learning_path": A step-by-step learning roadmap (max 6 steps). Each step must have "step" (integer), "title", "description", "skills" (list), and "project" or "projects" (practical real-world project).
-2. "better_fit_roles": 3–4 alternative or closely aligned industry roles (list of role title strings).
-3. "estimated_salary": Realistic annual salary range string for India (e.g. "₹8L – ₹22L").
+2. "better_fit_roles": 3–4 alternative or closely aligned industry roles. Each role must be an object with:
+   - "role": Role title string (e.g. "Data Scientist")
+   - "description": 1 concise sentence explaining why it fits the candidate
+   - "required_skills": 2-4 key skills needed (list of strings)
+   - "average_salary": Salary range string (e.g. "₹10L – ₹22L")
+3. "estimated_salary": Realistic annual salary range string for India (e.g. "₹8L – ₹20L").
 
 Return ONLY valid JSON (no markdown):
 {{
@@ -400,7 +404,14 @@ Return ONLY valid JSON (no markdown):
       "project": "..."
     }}
   ],
-  "better_fit_roles": ["Role 1", "Role 2", "Role 3"],
+  "better_fit_roles": [
+    {{
+      "role": "Machine Learning Engineer",
+      "description": "Applies candidate ML and Python skills to production systems.",
+      "required_skills": ["python", "machine learning"],
+      "average_salary": "₹12L – ₹25L"
+    }}
+  ],
   "estimated_salary": "₹8L – ₹20L"
 }}
 """

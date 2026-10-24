@@ -672,16 +672,24 @@ Built ML projects including classification and regression models.`
                                 <span className="sec-title">Roles You Can Target Right Now</span>
                             </div>
                             <div className="g2">
-                                {sa(data.better_fit_roles).map(r => (
-                                    <div key={r.role} className="bfr-card">
-                                        <div className="bfr-role">{r.role}</div>
-                                        {r.average_salary && <div className="bfr-salary">💰 Avg: {r.average_salary}</div>}
-                                        <div className="bfr-desc">{sv(r.description)}</div>
-                                        <div className="tags">
-                                            {sa(r.required_skills || r.skills_used).map(s => <span key={s} className="tag blue">{s}</span>)}
+                                {sa(data.better_fit_roles).map((r, idx) => {
+                                    const roleTitle = typeof r === "string" ? r : (r?.role || "Specialized Role");
+                                    const desc = typeof r === "object" ? r?.description : "";
+                                    const salary = typeof r === "object" ? r?.average_salary : "";
+                                    const skills = typeof r === "object" ? (r?.required_skills || r?.skills_used || []) : [];
+                                    return (
+                                        <div key={roleTitle || idx} className="bfr-card">
+                                            <div className="bfr-role">{roleTitle}</div>
+                                            {salary && <div className="bfr-salary">💰 Avg: {salary}</div>}
+                                            {desc && <div className="bfr-desc">{desc}</div>}
+                                            {sa(skills).length > 0 && (
+                                                <div className="tags">
+                                                    {sa(skills).map(s => <span key={s} className="tag blue">{s}</span>)}
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
