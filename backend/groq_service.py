@@ -11,6 +11,8 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # 🔧 Clean JSON safely
 def clean_json_response(text):
+    if not isinstance(text, str):
+        return ""
     text = re.sub(r"```json|```", "", text).strip()
 
     # extract JSON array or object
@@ -26,7 +28,7 @@ def generate_response(prompt, task="general"):
             model = "openai/gpt-oss-120b"  # 🔥 better reasoning
             temperature = 0.1
         else:
-            model = "llama-3.3-70b-versatile"  # ⚡ faster
+            model = "openai/gpt-oss-20b"   # ⚡ fast & active
             temperature = 0.2
 
         response = client.chat.completions.create(
@@ -225,9 +227,12 @@ Domain:
 """
 
     raw = generate_response(prompt)
-
     cleaned = clean_json_response(raw)
-    return json.loads(cleaned)
+    try:
+        data = json.loads(cleaned)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
 
 def extract_resume_skills_llm(resume_text):
     prompt = f"""
@@ -250,9 +255,12 @@ Resume:
 """
 
     raw = generate_response(prompt)
-
     cleaned = clean_json_response(raw)
-    return json.loads(cleaned)
+    try:
+        data = json.loads(cleaned)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
 
 # 🔥 LEARNING ROADMAP
 def generate_learning_path_llm(priority_skills, role):
@@ -273,8 +281,11 @@ Rules:
 
     raw = generate_response(prompt)
     cleaned = clean_json_response(raw)
-
-    return json.loads(cleaned)
+    try:
+        data = json.loads(cleaned)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
 
 # 🔥 ROLE SUGGESTION
 def suggest_roles_llm(resume_skills, target_role):
@@ -297,8 +308,11 @@ Rules:
 
     raw = generate_response(prompt)
     cleaned = clean_json_response(raw)
-
-    return json.loads(cleaned)
+    try:
+        data = json.loads(cleaned)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
 
 # 🔥 SALARY ESTIMATION
 def estimate_salary_llm(role):
