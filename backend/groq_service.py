@@ -20,8 +20,8 @@ def clean_json_response(text):
     return match.group(0) if match else text
 
 
-# 🔥 Hybrid LLM Router
-def generate_response(prompt, task="general"):
+# 🔥 Groq Direct Provider Implementation
+def generate_groq_response(prompt, task="general"):
     try:
         # 🔥 Choose model based on task
         if task in ["classification", "evaluation"]:
@@ -41,6 +41,15 @@ def generate_response(prompt, task="general"):
 
     except Exception as e:
         return {"error": str(e)}
+
+
+# 🔥 Hybrid LLM Router (Supports Groq and Amazon Bedrock)
+def generate_response(prompt, task="general"):
+    provider = os.getenv("LLM_PROVIDER", "groq").lower()
+    if provider == "bedrock":
+        from bedrock_service import generate_bedrock_response
+        return generate_bedrock_response(prompt, task=task)
+    return generate_groq_response(prompt, task=task)
 
 
 # 🔥 1️⃣ Extract Job Skills (FAST MODEL)

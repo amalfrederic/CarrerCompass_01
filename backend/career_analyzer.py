@@ -2,7 +2,7 @@
 
 from analyser import analyze_resume_against_job, score_role_with_classified_skills
 from semantic_engine import extract_semantic_skills
-from groq_service import (
+from llm_provider import (
     generate_roles_from_domain,
     generate_roles_with_skills
 )

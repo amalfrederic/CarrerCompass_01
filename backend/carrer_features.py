@@ -1,4 +1,4 @@
-from groq_service import (
+from llm_provider import (
     generate_learning_path_llm,
     suggest_roles_llm,
     estimate_salary_llm,

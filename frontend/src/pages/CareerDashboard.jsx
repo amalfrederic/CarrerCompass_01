@@ -8,10 +8,8 @@ import { logout } from "../services/auth";
 import { auth, db } from "../firebase/config";
 import { useNavigate } from "react-router-dom";
 
-console.log(auth);
-console.log(db);
-
-const API_URL = "http://127.0.0.1:8000/career-analyzer";
+const rawApiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/career-analyzer";
+const API_URL = rawApiUrl.endsWith("/career-analyzer") ? rawApiUrl : `${rawApiUrl.replace(/\/+$/, "")}/career-analyzer`;
 
 const MOCK = {
     target_role: "AI Engineer",
