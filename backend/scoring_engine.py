@@ -39,9 +39,17 @@ def core_match_score(resume_skills, job_skills, model):
     matched = []
     missing = []
 
+    job_list = list(job_skills.keys())
+
+    # 🛡️ Guard against empty skill lists (prevents PyTorch mat1/mat2 shape crash)
+    if not job_list:
+        return 0, [], []
+
+    if not resume_skills:
+        return 0, [], job_list
+
     # Precompute embeddings
     resume_emb = model.encode(resume_skills, convert_to_tensor=True)
-    job_list = list(job_skills.keys())
     job_emb = model.encode(job_list, convert_to_tensor=True)
 
     sim_matrix = util.cos_sim(resume_emb, job_emb)
