@@ -329,3 +329,87 @@ Example:
 
     raw = generate_response(prompt)
     return raw.strip().replace('"', '')
+
+
+# 🚀 OPTIMIZATION: BATCH GENERATE ROLES & SKILLS (1 CALL INSTEAD OF 11)
+def generate_roles_with_skills(domain: str):
+    prompt = f"""
+You are an expert in tech careers and technical recruiting.
+Domain / Target Role: {domain}
+
+Task:
+Generate 5 specific, distinct industry job roles in this domain.
+For EACH role, list the most critical technical skills classified into:
+- "core": 2 to 3 absolutely mandatory foundational skills
+- "important": frameworks, libraries, tools, and platforms
+- "optional": supporting or nice-to-have skills
+
+Rules:
+- Skills must be short (1–3 words)
+- Keep "core" strictly 2 to 3 skills
+- Return ONLY a raw JSON array of objects (no markdown, no text)
+
+Example format:
+[
+  {{
+    "role": "Machine Learning Engineer",
+    "classified_skills": {{
+      "core": ["python", "machine learning", "algorithms"],
+      "important": ["tensorflow", "pytorch", "scikit-learn", "docker"],
+      "optional": ["kubernetes", "aws", "git"]
+    }}
+  }}
+]
+"""
+    raw = generate_response(prompt, task="extraction")
+    cleaned = clean_json_response(raw)
+    try:
+        data = json.loads(cleaned)
+        if isinstance(data, list) and len(data) > 0 and "role" in data[0]:
+            return data
+        return []
+    except Exception:
+        return []
+
+
+# 🚀 OPTIMIZATION: BATCH SYNTHESIZE ROADMAP, SALARY, AND ROLES (1 CALL INSTEAD OF 3)
+def generate_career_synthesis(best_role: str, priority_skills: list, resume_skills: list, target_role: str):
+    prompt = f"""
+You are an expert career mentor and industry advisor.
+
+Context:
+Target Domain: {target_role}
+Best Match Role: {best_role}
+Candidate Missing Priority Skills: {priority_skills[:8]}
+Candidate Existing Skills: {resume_skills[:8]}
+
+Task:
+Provide a career acceleration package including:
+1. "learning_path": A step-by-step learning roadmap (max 6 steps). Each step must have "step" (integer), "title", "description", "skills" (list), and "project" or "projects" (practical real-world project).
+2. "better_fit_roles": 3–4 alternative or closely aligned industry roles (list of role title strings).
+3. "estimated_salary": Realistic annual salary range string for India (e.g. "₹8L – ₹22L").
+
+Return ONLY valid JSON (no markdown):
+{{
+  "learning_path": [
+    {{
+      "step": 1,
+      "title": "...",
+      "description": "...",
+      "skills": ["..."],
+      "project": "..."
+    }}
+  ],
+  "better_fit_roles": ["Role 1", "Role 2", "Role 3"],
+  "estimated_salary": "₹8L – ₹20L"
+}}
+"""
+    raw = generate_response(prompt, task="extraction")
+    cleaned = clean_json_response(raw)
+    try:
+        data = json.loads(cleaned)
+        if isinstance(data, dict) and "learning_path" in data:
+            return data
+        return {}
+    except Exception:
+        return {}

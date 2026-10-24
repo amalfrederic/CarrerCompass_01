@@ -24,10 +24,42 @@ def flatten_classified(classified):
     return job_dict
 
 
-def analyze_resume_against_job(resume_text, job_description):
+def score_role_with_classified_skills(resume_text, resume_skills, classified):
+    # Fix: Limit core skills to max 3
+    if len(classified.get("core", [])) > 3:
+        extra = classified["core"][3:]
+        classified["core"] = classified["core"][:3]
+        if "important" not in classified:
+            classified["important"] = []
+        classified["important"].extend(extra)
 
-    # 1️⃣ Extract resume skills
-    resume_skills = extract_semantic_skills(resume_text)
+    job_dict = flatten_classified(classified)
+    resume_list = normalize(resume_skills)
+
+    score_data = final_score(
+        resume_text=resume_text,
+        resume_skills=resume_list,
+        job_skills=job_dict,
+        model=model
+    )
+
+    return {
+        "match_percentage": score_data["score"],
+        "match_label": score_data["label"],
+        "matched_skills": score_data["matched_skills"],
+        "missing_skills": score_data["missing_skills"],
+        "classified_skills": classified
+    }
+
+
+def analyze_resume_against_job(resume_text, job_description, pre_extracted_skills=None):
+
+    # 1️⃣ Extract resume skills (reuse pre-extracted if available to avoid duplicate LLM calls)
+    if pre_extracted_skills is not None:
+        resume_skills = pre_extracted_skills
+    else:
+        resume_skills = extract_semantic_skills(resume_text)
+
     resume_list = normalize(resume_skills)
 
     # 2️⃣ Extract job skills
@@ -47,28 +79,5 @@ def analyze_resume_against_job(resume_text, job_description):
     if isinstance(classified, dict) and "error" in classified:
         return {"error": "Skill classification failed", "details": classified}
 
-    # 🔥 Fix: Avoid too many core skills
-    if len(classified.get("core", [])) > 3:
-        extra = classified["core"][3:]
-        classified["core"] = classified["core"][:3]
-        classified["important"].extend(extra)
-
-    # 4️⃣ Convert for scoring
-    job_dict = flatten_classified(classified)
-
-    # 5️⃣ Scoring (NEW ENGINE)
-    score_data = final_score(
-        resume_text=resume_text,
-        resume_skills=resume_list,
-        job_skills=job_dict,
-        model=model
-    )
-
-    # 6️⃣ Return clean output (optimized for career analyzer)
-    return {
-        "match_percentage": score_data["score"],
-        "match_label": score_data["label"],
-        "matched_skills": score_data["matched_skills"],
-        "missing_skills": score_data["missing_skills"],
-        "classified_skills": classified
-    }
+    # 4️⃣ Score locally
+    return score_role_with_classified_skills(resume_text, resume_list, classified)
